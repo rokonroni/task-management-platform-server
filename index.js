@@ -52,7 +52,11 @@ async function run() {
       });
     };
 
-    
+    app.post("/tasks", async (req, res) => {
+      const results = req.body;
+      const result = await taskCollection.insertOne(results);
+      res.send(result);
+    });
 
 
 
