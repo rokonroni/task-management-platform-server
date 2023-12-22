@@ -53,7 +53,7 @@ async function run() {
 
     app.get("/getToDoTask", verifyToken, async (req, res) => {
       const email = req.query.email;
-      const taskType = req.query.taskType || "to-do"; 
+      const taskType = req.query.taskType || "to-do";
       const query = { userEmail: email, taskType: taskType };
       const result = await taskCollection
         .find(query)
@@ -64,7 +64,7 @@ async function run() {
 
     app.get("/getOngoingTask", verifyToken, async (req, res) => {
       const email = req.query.email;
-      const taskType = req.query.taskType || "ongoing"; 
+      const taskType = req.query.taskType || "ongoing";
       const query = { userEmail: email, taskType: taskType };
       const result = await taskCollection
         .find(query)
@@ -84,30 +84,63 @@ async function run() {
       res.send(result);
     });
 
-    app.patch('/updateTaskType/:taskId', verifyToken, async (req, res) => {
-  const taskId = req.params.taskId;
-  const { taskType } = req.body;
+    app.patch("/updateTaskType/:taskId", verifyToken, async (req, res) => {
+      const taskId = req.params.taskId;
+      const { taskType } = req.body;
 
-  try {
-    const result = await taskCollection.updateOne(
-      { _id: new ObjectId(taskId) },
-      { $set: { taskType: taskType } }
-    );
+      try {
+        const result = await taskCollection.updateOne(
+          { _id: new ObjectId(taskId) },
+          { $set: { taskType: taskType } }
+        );
 
-    if (result.modifiedCount === 1) {
-      res.status(200).send({ message: 'TaskType updated successfully' });
-    } else {
-      res.status(404).send({ message: 'Task not found' });
-    }
-  } catch (error) {
-    console.error('Error updating task type:', error);
-    res.status(500).send({ message: 'Internal Server Error' });
-  }
-});
+        if (result.modifiedCount === 1) {
+          res.status(200).send({ message: "TaskType updated successfully" });
+        } else {
+          res.status(404).send({ message: "Task not found" });
+        }
+      } catch (error) {
+        console.error("Error updating task type:", error);
+        res.status(500).send({ message: "Internal Server Error" });
+      }
+    });
 
     app.post("/tasks", async (req, res) => {
       const results = req.body;
       const result = await taskCollection.insertOne(results);
+      res.send(result);
+    });
+
+    app.get("/tasks/:id", verifyToken, async (req, res) => {
+      try {
+        const id = req.params.id;
+        console.log("Task ID:", id);
+
+        const query = { _id: new ObjectId(id) };
+        const result = await taskCollection.findOne(query);
+        console.log("Result:", result);
+
+        res.send(result);
+      } catch (error) {
+        console.error("Error fetching task:", error);
+        res.status(500).send("Internal Server Error");
+      }
+    });
+
+    app.patch("/tasks/:id", verifyToken, async (req, res) => {
+      const id = req.params.id;
+      const updatedItem = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          taskTitle: updatedItem.taskTitle,
+          taskPriority: updatedItem.taskPriority,
+          taskDescription: updatedItem.taskDescription,
+          taskDeadline: updatedItem.taskDeadline,
+          taskAddDate: updatedItem.taskAddDate,
+        },
+      };
+      const result = await userCollection.updateOne(filter, updatedDoc);
       res.send(result);
     });
 
