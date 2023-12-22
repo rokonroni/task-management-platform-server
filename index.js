@@ -140,7 +140,13 @@ async function run() {
           taskAddDate: updatedItem.taskAddDate,
         },
       };
-      const result = await userCollection.updateOne(filter, updatedDoc);
+      const result = await taskCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+
+    app.delete("/task/:id", verifyToken, async (req, res) => {
+      const id = req.params.id;
+      const result = await taskCollection.deleteOne({ _id: new ObjectId(id) });
       res.send(result);
     });
 
